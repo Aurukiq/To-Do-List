@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المهام الذكية للطلاب</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تنسيق عام للصفحة */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            background-attachment: fixed;
+            background-size: cover;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        /* الحاوية الرئيسية */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            width: 90%;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* تنسيق العنوان */
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 50%;
+            transform: translateX(50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+
+        /* حقل إدخال المهام */
+        .task-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .task-input-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .task-input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        /* حقل إدخال الوقت */
+        .time-input-container {
+            position: relative;
+            width: 160px;
+        }
+
+        .time-input-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            pointer-events: none;
+        }
+
+        .time-input {
+            width: 100%;
+            padding: 15px 15px 15px 40px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .add-btn {
+            padding: 0 25px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* قائمة المهام */
+        ul {
+            list-style: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        ul::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ul::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ul::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        li {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        li:hover {
+            transform: translateX(-5px);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ألوان حسب حالة المهمة */
+        li.normal {
+            background: #ffffff;
+            border-left: 4px solid #667eea;
+        }
+
+        li.urgent {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            animation: pulseWarning 2s infinite;
+        }
+
+        li.critical {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            animation: pulseDanger 1.5s infinite;
+        }
+
+        li.completed {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        li.completed::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            width: calc(100% - 100px);
+            height: 2px;
+            background: #28a745;
+            transform: translateY(-50%);
+        }
+
+        .task-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .task-text {
+            word-break: break-word;
+            text-align: right;
+        }
+
+        li.completed .task-text {
+            color: #6c757d;
+            text-decoration: line-through;
+        }
+
+        /* تنسيق الوقت */
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #4a4a4a;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .time-badge i {
+            color: #667eea;
+            font-size: 12px;
+        }
+
+        /* أنماط حالة الموعد */
+        .deadline-urgent {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: rgba(255, 193, 7, 0.3);
+        }
+
+        .deadline-urgent i {
+            color: #ffc107;
+        }
+
+        .deadline-passed {
+            background: rgba(220, 53, 69, 0.1);
+            border-color: rgba(220, 53, 69, 0.3);
+        }
+
+        .deadline-passed i {
+            color: #dc3545;
+        }
+
+        .deadline-normal {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: rgba(40, 167, 69, 0.3);
+        }
+
+        .deadline-normal i {
+            color: #28a745;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        li button {
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+        }
+
+        .complete-btn {
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .complete-btn:hover {
+            background: #28a745;
+            color: white;
+        }
+
+        .delete-btn {
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .delete-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .edit-btn {
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .edit-btn:hover {
+            background: #ffc107;
+            color: white;
+        }
+
+        /* فلترة المهام */
+        .task-filters {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: none;
+            background: #e9ecef;
+            color: #495057;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* إحصائيات المهام */
+        .task-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .stats-cards {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 10px 15px;
+            flex-grow: 1;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 100px;
+        }
+
+        .stat-card .number {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-card.total .number {
+            color: #667eea;
+        }
+
+        .stat-card.completed .number {
+            color: #4caf50;
+        }
+
+        .stat-card.pending .number {
+            color: #ff9800;
+        }
+
+        .stat-card.overdue .number {
+            color: #f44336;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 10px;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+
+        /* رسالة عندما لا توجد مهام */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #adb5bd;
+        }
+
+        /* تأثيرات الحركة */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+        }
+
+        @keyframes pulseDanger {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+
+        li {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* العلامة المائية المتحركة */
+        .watermark {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.7);
+            pointer-events: none;
+            user-select: none;
+            font-weight: bold;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            padding: 12px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .watermark::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.4) 0%, 
+                rgba(118, 75, 162, 0.4) 50%, 
+                rgba(102, 126, 234, 0.4) 100%);
+            border-radius: 50px;
+            z-index: -1;
+            animation: pulse 4s linear infinite;
+            opacity: 0.7;
+        }
+
+        /* العلامة المائية الخلفية المتألقة */
+        .watermark-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 150px;
+            color: rgba(255, 255, 255, 0.05);
+            font-weight: bold;
+            z-index: 0;
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            animation: shimmer 8s linear infinite;
+        }
+
+        /* تأثيرات الحركة الجديدة */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0.05; }
+            50% { opacity: 0.1; }
+            100% { opacity: 0.05; }
+        }
+
+        /* تأثيرات إضافية للعلامة المائية */
+        .watermark::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                transparent 100%);
+            border-radius: 50px;
+            animation: shine 5s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) skew(-20deg); opacity: 0; }
+            20% { opacity: 0.5; }
+            100% { transform: translateX(100%) skew(-20deg); opacity: 0; }
+        }
+
+        /* رسائل التنبيه */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* تنبيهات المواعيد */
+        .deadline-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 350px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .deadline-notification.warning i {
+            color: #ff9800;
+        }
+
+        .deadline-notification.danger i {
+            color: #f44336;
+        }
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+        }
+
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .task-input-row {
+                flex-direction: column;
+            }
+            
+            .time-input, .task-input {
+                width: 100% !important;
+            }
+            
+            .time-input-container {
+                width: 100%;
+            }
+            
+            .add-btn {
+                width: 100%;
+                padding: 12px;
+            }
+            
+            .task-actions {
+                flex-direction: row;
+            }
+            
+            li button {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .stats-cards {
+                flex-direction: column;
+            }
+            
+            .deadline-notification {
+                max-width: calc(100% - 40px);
+            }
+
+            .watermark {
+                font-size: 20px;
+                padding: 8px 15px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .watermark-bg {
+                font-size: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- العلامة المائية المتحركة -->
+    <div class="watermark">NASRAWI</div>
+    
+    <!-- العلامة المائية الخلفية المتألقة -->
+    <div class="watermark-bg">NASRAWI</div>
+    
+    <div class="container">
+        <h1><i class="fas fa-tasks"></i> قائمة المهام الذكية</h1>
+        
+        <div class="task-filters">
+            <button class="filter-btn active" onclick="filterTasks('all')">الكل</button>
+            <button class="filter-btn" onclick="filterTasks('active')">غير المكتملة</button>
+            <button class="filter-btn" onclick="filterTasks('completed')">المكتملة</button>
+            <button class="filter-btn" onclick="filterTasks('urgent')">عاجلة</button>
+            <button class="filter-btn" onclick="filterTasks('overdue')">متأخرة</button>
+        </div>
+        
+        <div class="task-input-container">
+            <div class="task-input-row">
+                <input type="text" id="task" class="task-input" placeholder="أدخل مهمة جديدة..." autocomplete="off">
+                <div class="time-input-container">
+                    <i class="far fa-clock"></i>
+                    <input type="datetime-local" id="taskTime" class="time-input">
+                </div>
+            </div>
+            <button onclick="addTask()" class="add-btn"><i class="fas fa-plus"></i> إضافة مهمة</button>
+        </div>
+        
+        <ul id="taskList">
+            <!-- المهام ستضاف هنا ديناميكيًا -->
+        </ul>
+        
+        <div class="task-stats">
+            <div class="stats-row">
+                <div class="stats-cards">
+                    <div class="stat-card total">
+                        <div class="number" id="totalTasks">0</div>
+                        <div class="label">المهام الكلية</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="totalProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card completed">
+                        <div class="number" id="completedTasks">0</div>
+                        <div class="label">مكتملة</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="completedProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card pending">
+                        <div class="number" id="pendingTasks">0</div>
+                        <div class="label">قيد الإنجاز</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="pendingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card overdue">
+                        <div class="number" id="overdueTasks">0</div>
+                        <div class="label">متأخرة</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="overdueProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // مصفوفة لتخزين المهام
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let notificationTimeout;
+        
+        // عناصر DOM
+        const taskInput = document.getElementById('task');
+        const taskTimeInput = document.getElementById('taskTime');
+        const taskList = document.getElementById('taskList');
+        const totalTasksSpan = document.getElementById('totalTasks');
+        const completedTasksSpan = document.getElementById('completedTasks');
+        const pendingTasksSpan = document.getElementById('pendingTasks');
+        const overdueTasksSpan = document.getElementById('overdueTasks');
+        const totalProgress = document.getElementById('totalProgress');
+        const completedProgress = document.getElementById('completedProgress');
+        const pendingProgress = document.getElementById('pendingProgress');
+        const overdueProgress = document.getElementById('overdueProgress');
+        
+        // تحميل المهام عند بدء التشغيل
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTasks();
+            updateStats();
+            checkDeadlines();
+            
+            // تحميل المهام المحفوظة من localStorage
+            if (tasks.length > 0) {
+                renderTasks();
+            } else {
+                showEmptyState();
+            }
+            
+            // التحقق من المواعيد كل دقيقة
+            setInterval(checkDeadlines, 60000);
+        });
+        
+        // دالة لإضافة مهمة جديدة
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            const taskTime = taskTimeInput.value;
+            
+            if (taskText === '') {
+                showAlert('الرجاء إدخال نص المهمة!', 'error');
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                text: taskText,
+                time: taskTime,
+                completed: false,
+                createdAt: new Date()
+            };
+            
+            tasks.unshift(newTask);
+            saveTasks();
+            renderTasks();
+            updateStats();
+            checkDeadlines();
+            
+            taskInput.value = '';
+            taskTimeInput.value = '';
+            showAlert('تمت إضافة المهمة بنجاح!', 'success');
+        }
+        
+        // دالة لعرض المهام
+        function renderTasks(filter = 'all') {
+            taskList.innerHTML = '';
+            
+            let filteredTasks = tasks;
+            
+            if (filter === 'active') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            } else if (filter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            } else if (filter === 'urgent') {
+                filteredTasks = tasks.filter(task => {
+                    if (task.completed || !task.time) return false;
+                    const taskDeadline = new Date(task.time);
+                    const now = new Date();
+                    const hoursDiff = (taskDeadline - now) / (1000 * 60 * 60);
+                    return hoursDiff < 24 && hoursDiff >= 0;
+                });
+            } else if (filter === 'overdue') {
+                filteredTasks = tasks.filter(task => {
+                    if (task.completed || !task.time) return false;
+                    const taskDeadline = new Date(task.time);
+                    return taskDeadline < new Date();
+                });
+            }
+            
+            if (filteredTasks.length === 0) {
+                showEmptyState(filter);
+                return;
+            }
+            
+            filteredTasks.forEach(task => {
+                const li = document.createElement('li');
+                
+                // تحديد حالة المهمة
+                const now = new Date();
+                const taskDeadline = task.time ? new Date(task.time) : null;
+                const timeDiff = taskDeadline ? taskDeadline - now : 0;
+                const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+                
+                if (task.completed) {
+                    li.classList.add('completed');
+                } else if (taskDeadline && taskDeadline < now) {
+                    li.classList.add('critical');
+                } else if (taskDeadline && hoursDiff < 24) {
+                    li.classList.add('urgent');
+                } else {
+                    li.classList.add('normal');
+                }
+                
+                const isDeadlinePassed = taskDeadline && taskDeadline < now && !task.completed;
+                
+                li.innerHTML = `
+                    <div class="task-content">
+                        <span class="task-text">${task.text}</span>
+                        ${task.time ? `
+                            <div class="date-display">
+                                <div class="${getTimeBadgeClass(taskDeadline, task.completed)}">
+                                    <i class="far fa-clock"></i>
+                                    <span>${formatDateTimeForDisplay(task.time, isDeadlinePassed)}</span>
+                                </div>
+                                ${!task.completed ? getTimeRemainingBadge(taskDeadline) : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="task-actions">
+                        <button class="complete-btn" onclick="toggleComplete(${task.id})" title="إكمال">
+                            <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                        </button>
+                        <button class="edit-btn" onclick="editTask(${task.id})" title="تعديل">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" onclick="removeTask(${task.id})" title="حذف">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                taskList.appendChild(li);
+            });
+        }
+        
+        // دالة للتحقق من المواعيد وعرض التنبيهات
+        function checkDeadlines() {
+            const now = new Date();
+            const urgentTasks = [];
+            const overdueTasks = [];
+            
+            tasks.forEach(task => {
+                if (task.completed || !task.time) return;
+                
+                const taskDeadline = new Date(task.time);
+                const timeDiff = taskDeadline - now;
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                
+                if (hoursDiff < 0) {
+                    overdueTasks.push(task);
+                } else if (hoursDiff < 24) {
+                    urgentTasks.push(task);
+                }
+            });
+            
+            // عرض تنبيه واحد فقط (الأكثر إلحاحاً)
+            clearTimeout(notificationTimeout);
+            
+            if (overdueTasks.length > 0) {
+                showDeadlineNotification(overdueTasks, 'danger', 'مواعيد متأخرة!', `لديك ${overdueTasks.length} مهام تجاوزت موعدها النهائي`);
+            } else if (urgentTasks.length > 0) {
+                showDeadlineNotification(urgentTasks, 'warning', 'مواعيد عاجلة!', `لديك ${urgentTasks.length} مهام تقترب من موعدها النهائي (أقل من 24 ساعة)`);
+            }
+        }
+        
+        // دالة لعرض تنبيه المواعيد
+        function showDeadlineNotification(tasks, type, title, message) {
+            // إزالة أي تنبيهات موجودة
+            const existingNotification = document.querySelector('.deadline-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `deadline-notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'danger' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // إخفاء التنبيه تلقائياً بعد 10 ثواني
+            notificationTimeout = setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 300);
+            }, 10000);
+        }
+        
+        // دالة لتحديد كلاس شارة الوقت حسب الحالة
+        function getTimeBadgeClass(taskDeadline, isCompleted) {
+            if (isCompleted) return 'time-badge deadline-normal';
+            if (!taskDeadline) return 'time-badge';
+            
+            const now = new Date();
+            const timeDiff = taskDeadline - now;
+            const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+            
+            if (timeDiff < 0) return 'time-badge deadline-passed';
+            if (hoursDiff < 24) return 'time-badge deadline-urgent';
+            return 'time-badge deadline-normal';
+        }
+        
+        // دالة لعرض الوقت المتبقي
+        function getTimeRemainingBadge(taskDeadline) {
+            if (!taskDeadline) return '';
+            
+            const now = new Date();
+            const timeDiff = taskDeadline - now;
+            
+            if (timeDiff < 0) {
+                return `
+                    <div class="time-badge deadline-passed" style="margin-top: 5px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>تأخرت: ${formatTimePassed(taskDeadline)}</span>
+                    </div>
+                `;
+            }
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            let remainingText = '';
+            if (days > 0) {
+                if (days === 1) {
+                    remainingText = `باقي يوم واحد`;
+                } else if (days === 2) {
+                    remainingText = `باقي يومين`;
+                } else if (days > 2 && days < 11) {
+                    remainingText = `باقي ${days} أيام`;
+                } else {
+                    remainingText = `باقي ${days} يوماً`;
+                }
+            } else if (hours > 0) {
+                if (hours === 1) {
+                    remainingText = `باقي ساعة واحدة`;
+                } else if (hours === 2) {
+                    remainingText = `باقي ساعتين`;
+                } else if (hours > 2 && hours < 11) {
+                    remainingText = `باقي ${hours} ساعات`;
+                } else {
+                    remainingText = `باقي ${hours} ساعة`;
+                }
+            } else {
+                remainingText = 'أقل من ساعة';
+            }
+            
+            return `
+                <div class="time-badge ${hours < 24 ? 'deadline-urgent' : 'deadline-normal'}" style="margin-top: 5px;">
+                    <i class="fas ${hours < 24 ? 'fa-hourglass-end' : 'fa-hourglass-half'}"></i>
+                    <span>${remainingText}</span>
+                </div>
+            `;
+        }
+        
+        // دالة لتنسيق الوقت المنقضي منذ الموعد النهائي
+        function formatTimePassed(pastDate) {
+            const now = new Date();
+            const diff = now - pastDate;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            if (days > 0) {
+                if (days === 1) {
+                    return `منذ يوم واحد`;
+                } else if (days === 2) {
+                    return `منذ يومين`;
+                } else if (days > 2 && days < 11) {
+                    return `منذ ${days} أيام`;
+                } else {
+                    return `منذ ${days} يوماً`;
+                }
+            } else if (hours > 0) {
+                if (hours === 1) {
+                    return `منذ ساعة واحدة`;
+                } else if (hours === 2) {
+                    return `منذ ساعتين`;
+                } else if (hours > 2 && hours < 11) {
+                    return `منذ ${hours} ساعات`;
+                } else {
+                    return `منذ ${hours} ساعة`;
+                }
+            } else {
+                return 'منذ أقل من ساعة';
+            }
+        }
+        
+        // دالة لتنسيق التاريخ والوقت للعرض
+        function formatDateTimeForDisplay(dateTimeString, isPassed) {
+            if (!dateTimeString) return '';
+            
+            const date = new Date(dateTimeString);
+            const now = new Date();
+            
+            // إذا كان التاريخ هو اليوم
+            if (date.toDateString() === now.toDateString()) {
+                return `اليوم ${formatTime(date)}`;
+            }
+            
+            // إذا كان التاريخ هو غد
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            if (date.toDateString() === tomorrow.toDateString()) {
+                return `غداً ${formatTime(date)}`;
+            }
+            
+            // إذا كان التاريخ خلال الأسبوع الحالي
+            const weekLater = new Date(now);
+            weekLater.setDate(weekLater.getDate() + 7);
+            if (date < weekLater) {
+                const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                return `${days[date.getDay()]} ${formatTime(date)}`;
+            }
+            
+            // عرض التاريخ كاملاً
+            return formatDate(date) + ' ' + formatTime(date);
+        }
+        
+        // دالة لتنسيق التاريخ فقط
+        function formatDate(date) {
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            return date.toLocaleDateString('ar-EG', options);
+        }
+        
+        // دالة لتنسيق الوقت فقط
+        function formatTime(date) {
+            const options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            };
+            return date.toLocaleTimeString('ar-EG', options);
+        }
+        
+        // دالة لحذف المهمة
+        function removeTask(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+                tasks = tasks.filter(task => task.id !== id);
+                saveTasks();
+                renderTasks();
+                updateStats();
+                checkDeadlines();
+                showAlert('تم حذف المهمة بنجاح!', 'success');
+            }
+        }
+        
+        // دالة لتعديل المهمة
+        function editTask(id) {
+            const task = tasks.find(task => task.id === id);
+            const newText = prompt('تعديل المهمة:', task.text);
+            
+            if (newText !== null && newText.trim() !== '') {
+                task.text = newText.trim();
+                
+                // تعديل الوقت إذا أراد المستخدم
+                const newTime = prompt('تعديل وقت المهمة (اتركه فارغاً للحفاظ على الوقت الحالي):', task.time || '');
+                if (newTime !== null) {
+                    task.time = newTime || task.time;
+                }
+                
+                saveTasks();
+                renderTasks();
+                updateStats();
+                checkDeadlines();
+                showAlert('تم تعديل المهمة بنجاح!', 'success');
+            }
+        }
+        
+        // دالة لتغيير حالة الإكمال
+        function toggleComplete(id) {
+            const task = tasks.find(task => task.id === id);
+            task.completed = !task.completed;
+            saveTasks();
+            renderTasks();
+            updateStats();
+            checkDeadlines();
+            
+            const message = task.completed ? 'تم إكمال المهمة!' : 'تم إعادة فتح المهمة!';
+            showAlert(message, 'success');
+        }
+        
+        // دالة لتصفية المهام
+        function filterTasks(filter) {
+            // تحديث الأزرار النشطة
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderTasks(filter);
+        }
+        
+        // دالة لحفظ المهام في localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+        
+        // دالة لتحديث الإحصائيات
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(task => task.completed).length;
+            const pending = tasks.filter(task => !task.completed).length;
+            const overdue = tasks.filter(task => {
+                if (task.completed || !task.time) return false;
+                return new Date(task.time) < new Date();
+            }).length;
+            
+            totalTasksSpan.textContent = total;
+            completedTasksSpan.textContent = completed;
+            pendingTasksSpan.textContent = pending;
+            overdueTasksSpan.textContent = overdue;
+            
+            // تحديث أشرطة التقدم
+            if (total > 0) {
+                completedProgress.style.width = `${(completed / total) * 100}%`;
+                pendingProgress.style.width = `${(pending / total) * 100}%`;
+                overdueProgress.style.width = `${(overdue / total) * 100}%`;
+                totalProgress.style.width = '100%';
+            } else {
+                completedProgress.style.width = '0%';
+                pendingProgress.style.width = '0%';
+                overdueProgress.style.width = '0%';
+                totalProgress.style.width = '0%';
+            }
+        }
+        
+        // دالة لعرض حالة عدم وجود مهام
+        function showEmptyState(filter = 'all') {
+            let message = '';
+            let icon = 'fa-tasks';
+            
+            switch(filter) {
+                case 'active':
+                    message = 'لا توجد مهام غير مكتملة!';
+                    icon = 'fa-list';
+                    break;
+                case 'completed':
+                    message = 'لا توجد مهام مكتملة!';
+                    icon = 'fa-check-circle';
+                    break;
+                case 'urgent':
+                    message = 'لا توجد مهام عاجلة!';
+                    icon = 'fa-exclamation-circle';
+                    break;
+                case 'overdue':
+                    message = 'لا توجد مهام متأخرة!';
+                    icon = 'fa-exclamation-triangle';
+                    break;
+                default:
+                    message = 'لا توجد مهام حتى الآن!';
+                    icon = 'fa-tasks';
+            }
+            
+            taskList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas ${icon}"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // دالة لعرض رسائل التنبيه
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.classList.add('fade-out');
+                setTimeout(() => alert.remove(), 300);
+            }, 3000);
+        }
+        
+        // السماح بإضافة المهام باستخدام زر Enter
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    </script>
+</body>
+</html>
