@@ -1449,28 +1449,23 @@
         function shareTask(taskId) {
   const task = tasks.find(t => t.id === taskId);
   if (!task) {
-    showAlert('المهمة غير موجودة!', 'error');
+    showAlert('المهمة غير موجودة', 'error');
     return;
   }
 
-  // إنشاء رابط المهمة
+  // إنشاء رابط GitHub Pages الصحيح
+  const repoName = window.location.pathname.split('/')[1]; // للحصول على اسم المستودع تلقائياً
+  const baseUrl = `https://${window.location.hostname}/${repoName}`;
   const taskData = btoa(JSON.stringify(task));
-  const url = `https://اسم-المستخدم.github.io/اسم-المستودع/?sharedTask=${taskData}`;
+  const shareUrl = `${baseUrl}?sharedTask=${taskData}`;
 
-  // طريقة بديلة للنسخ تعمل على جميع المتصفحات
-  const tempInput = document.createElement("textarea");
-  tempInput.value = url;
-  document.body.appendChild(tempInput);
-  tempInput.select();
-  
-  try {
-    document.execCommand("copy");
-    showAlert('✓ تم نسخ رابط المشاركة!', 'success');
-  } catch (err) {
-    showAlert('⚠ يرجى النسخ يدويًا: ' + url, 'warning');
-  }
-  
-  document.body.removeChild(tempInput);
+  // طريقة نسخ تعمل على GitHub Pages
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    showAlert('✓ تم نسخ الرابط بنجاح', 'success');
+  }).catch(() => {
+    // إذا فشل النسخ، نعرض الرابط للنسخ اليدوي
+    prompt('انسخ هذا الرابط يدوياً:', shareUrl);
+  });
 }
         
         // دالة تحميل المهام المشتركة
