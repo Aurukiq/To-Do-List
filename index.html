@@ -1447,68 +1447,61 @@
         
         // دالة مشاركة المهمة
         function shareTask(taskId) {
-  const task = tasks.find(t => t.id == taskId);
+  const task = tasks.find(t => t.id === taskId);
   if (!task) {
     showAlert('المهمة غير موجودة', 'error');
     return;
   }
 
-  // حل مشكلة الترميز للغة العربية
-  function utf8_to_b64(str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
-      (match, p1) => String.fromCharCode('0x' + p1)));
+  // هذه الدالة الجديدة تدعم العربية
+  function encodeTask(taskObj) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(taskObj))));
   }
 
-  // إنشاء رابط GitHub Pages آمن
-  const repoPath = window.location.pathname.split('/')[1] || 'اسم-مستودعك'; // استبدل باسم مستودعك
-  const taskData = utf8_to_b64(JSON.stringify(task));
-  const shareUrl = `https://${window.location.hostname}/${repoPath}/?task=${taskData}`;
+  const taskData = encodeTask(task);
+  const shareUrl = `${window.location.origin}${window.location.pathname}?task=${taskData}`;
 
   // طريقة نسخ متوافقة مع جميع المتصفحات
   try {
     navigator.clipboard.writeText(shareUrl).then(() => {
-      showAlert('✓ تم نسخ الرابط', 'success');
+      showAlert('✓ تم نسخ رابط المشاركة', 'success');
     }).catch(() => {
-      prompt('انسخ الرابط يدويًا:', shareUrl);
+      prompt('انسخ الرابط يدوياً:', shareUrl);
     });
   } catch (e) {
-    prompt('انسخ الرابط يدويًا:', shareUrl);
+    prompt('انسخ الرابط يدوياً:', shareUrl);
   }
 }
         
         // دالة تحميل المهام المشتركة (محدثة)
-function loadSharedTask() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedTask = urlParams.get('task'); // تغيير من 'sharedTask' إلى 'task'
-    
-    if (sharedTask) {
-        try {
-            // استخدم دالة فك الترميز الجديدة
-            function b64_to_utf8(str) {
-                return decodeURIComponent(
-                    atob(str).split('').map(c => 
-                        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-                    ).join('')
-                );
-            }
-            
-            const task = JSON.parse(b64_to_utf8(sharedTask));
-            task.id = Date.now();
-            task.completed = false;
-            task.createdAt = new Date().toISOString();
-            
-            tasks.unshift(task);
-            saveTasks();
-            renderTasks();
-            showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
-            
-            // إزالة معلمة URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (e) {
-            console.error("Error loading shared task:", e);
-            showAlert('تعذر تحميل المهمة: تنسيق غير صحيح', 'error');
-        }
+        function loadSharedTask() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const taskData = urlParams.get('task');
+  
+  if (taskData) {
+    try {
+      // هذه الدالة لفك الترميز
+      function decodeTask(encodedStr) {
+        return JSON.parse(decodeURIComponent(escape(atob(encodedStr))));
+      }
+
+      const task = decodeTask(taskData);
+      task.id = Date.now();
+      task.completed = false;
+      task.createdAt = new Date().toISOString();
+      
+      tasks.unshift(task);
+      saveTasks();
+      renderTasks();
+      showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
+      
+      // إزالة معلمة URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {
+      console.error("خطأ في تحميل المهمة:", e);
+      showAlert('تعذر تحميل المهمة: الرابط غير صحيح', 'error');
     }
+  }
 }
         
         // دالة لعرض المهام
