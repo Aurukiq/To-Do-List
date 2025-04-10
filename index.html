@@ -1447,51 +1447,69 @@
         
         // دالة مشاركة المهمة
         function shareTask(taskId) {
-  const task = tasks.find(t => t.id === taskId);
+  const task = tasks.find(t => t.id == taskId);
   if (!task) {
     showAlert('المهمة غير موجودة', 'error');
     return;
   }
 
-  // إنشاء رابط GitHub Pages الصحيح
-  const repoName = window.location.pathname.split('/')[1]; // للحصول على اسم المستودع تلقائياً
-  const baseUrl = `https://${window.location.hostname}/${repoName}`;
-  const taskData = btoa(JSON.stringify(task));
-  const shareUrl = `${baseUrl}?sharedTask=${taskData}`;
+  // حل مشكلة الترميز للغة العربية
+  function utf8_to_b64(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, 
+      (match, p1) => String.fromCharCode('0x' + p1)));
+  }
 
-  // طريقة نسخ تعمل على GitHub Pages
-  navigator.clipboard.writeText(shareUrl).then(() => {
-    showAlert('✓ تم نسخ الرابط بنجاح', 'success');
-  }).catch(() => {
-    // إذا فشل النسخ، نعرض الرابط للنسخ اليدوي
-    prompt('انسخ هذا الرابط يدوياً:', shareUrl);
-  });
+  // إنشاء رابط GitHub Pages آمن
+  const repoPath = window.location.pathname.split('/')[1] || 'اسم-مستودعك'; // استبدل باسم مستودعك
+  const taskData = utf8_to_b64(JSON.stringify(task));
+  const shareUrl = `https://${window.location.hostname}/${repoPath}/?task=${taskData}`;
+
+  // طريقة نسخ متوافقة مع جميع المتصفحات
+  try {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showAlert('✓ تم نسخ الرابط', 'success');
+    }).catch(() => {
+      prompt('انسخ الرابط يدويًا:', shareUrl);
+    });
+  } catch (e) {
+    prompt('انسخ الرابط يدويًا:', shareUrl);
+  }
 }
         
-        // دالة تحميل المهام المشتركة
-        function loadSharedTask() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sharedTask = urlParams.get('sharedTask');
-            
-            if (sharedTask) {
-                try {
-                    const task = JSON.parse(atob(sharedTask));
-                    task.id = Date.now(); // تعيين معرف جديد
-                    task.completed = false;
-                    task.createdAt = new Date().toISOString();
-                    
-                    tasks.unshift(task);
-                    saveTasks();
-                    renderTasks();
-                    showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
-                    
-                    // إزالة معلمة URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                } catch (e) {
-                    showAlert('تعذر تحميل المهمة المشتركة', 'error');
-                }
+        // دالة تحميل المهام المشتركة (محدثة)
+function loadSharedTask() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedTask = urlParams.get('task'); // تغيير من 'sharedTask' إلى 'task'
+    
+    if (sharedTask) {
+        try {
+            // استخدم دالة فك الترميز الجديدة
+            function b64_to_utf8(str) {
+                return decodeURIComponent(
+                    atob(str).split('').map(c => 
+                        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                    ).join('')
+                );
             }
+            
+            const task = JSON.parse(b64_to_utf8(sharedTask));
+            task.id = Date.now();
+            task.completed = false;
+            task.createdAt = new Date().toISOString();
+            
+            tasks.unshift(task);
+            saveTasks();
+            renderTasks();
+            showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
+            
+            // إزالة معلمة URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {
+            console.error("Error loading shared task:", e);
+            showAlert('تعذر تحميل المهمة: تنسيق غير صحيح', 'error');
         }
+    }
+}
         
         // دالة لعرض المهام
         function renderTasks(filter = 'all') {
