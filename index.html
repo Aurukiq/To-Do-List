@@ -1447,28 +1447,31 @@
         
         // دالة مشاركة المهمة
         function shareTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-            
-            // إنشاء نسخة من المهمة بدون بعض الخصائص الداخلية
-            const taskToShare = {
-                text: task.text,
-                time: task.time,
-                priority: task.priority,
-                category: task.category,
-                subtasks: task.subtasks,
-                attachments: task.attachments
-            };
-            
-            const taskData = btoa(JSON.stringify(taskToShare));
-            const url = `${window.location.origin}${window.location.pathname}?sharedTask=${taskData}`;
-            
-            navigator.clipboard.writeText(url).then(() => {
-                showAlert('تم نسخ رابط المشاركة إلى الحافظة', 'success');
-            }).catch(err => {
-                showAlert('تعذر نسخ الرابط: ' + err, 'error');
-            });
-        }
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) {
+    showAlert('المهمة غير موجودة!', 'error');
+    return;
+  }
+
+  // إنشاء رابط المهمة
+  const taskData = btoa(JSON.stringify(task));
+  const url = `https://اسم-المستخدم.github.io/اسم-المستودع/?sharedTask=${taskData}`;
+
+  // طريقة بديلة للنسخ تعمل على جميع المتصفحات
+  const tempInput = document.createElement("textarea");
+  tempInput.value = url;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  
+  try {
+    document.execCommand("copy");
+    showAlert('✓ تم نسخ رابط المشاركة!', 'success');
+  } catch (err) {
+    showAlert('⚠ يرجى النسخ يدويًا: ' + url, 'warning');
+  }
+  
+  document.body.removeChild(tempInput);
+}
         
         // دالة تحميل المهام المشتركة
         function loadSharedTask() {
