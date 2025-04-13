@@ -1132,6 +1132,54 @@
                 display: none;
             }
         }
+
+        /* تحسينات جديدة */
+        .task-input-row {
+            transition: all 0.3s ease;
+        }
+
+        li {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .task-actions button {
+            transition: transform 0.2s ease;
+        }
+
+        .task-actions button:hover {
+            transform: scale(1.1);
+        }
+
+        .add-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* تحسينات للوضع الليلي */
+        body.dark-mode .task-input::placeholder {
+            color: #aaa;
+        }
+
+        body.dark-mode .time-input::placeholder {
+            color: #aaa;
+        }
+
+        /* تحسينات للعناية بالملفات المرفوعة */
+        .attachment-badge {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* تحسينات للأمان */
+        .task-text {
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -1159,7 +1207,7 @@
         
         <div class="task-input-container">
             <div class="task-input-row">
-                <input type="text" id="task" class="task-input" placeholder="أدخل مهمة جديدة..." autocomplete="off">
+                <input type="text" id="task" class="task-input" placeholder="أدخل مهمة جديدة..." autocomplete="off" maxlength="200">
                 <div class="time-input-container">
                     <i class="far fa-clock"></i>
                     <input type="datetime-local" id="taskTime" class="time-input">
@@ -1366,6 +1414,12 @@
                 showAlert('الرجاء إدخال نص المهمة!', 'error');
                 return;
             }
+
+            // التحقق من طول النص
+            if (taskText.length > 200) {
+                showAlert('نص المهمة طويل جداً (الحد الأقصى 200 حرف)', 'error');
+                return;
+            }
             
             const newTask = {
                 id: Date.now(),
@@ -1447,65 +1501,62 @@
         
         // دالة مشاركة المهمة
         function shareTask(taskId) {
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) {
-    showAlert('المهمة غير موجودة', 'error');
-    return;
-  }
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) {
+                showAlert('المهمة غير موجودة', 'error');
+                return;
+            }
 
-  // هذه الدالة الجديدة تدعم العربية
-  function encodeTask(taskObj) {
-    return btoa(unescape(encodeURIComponent(JSON.stringify(taskObj))));
-  }
+            function encodeTask(taskObj) {
+                return btoa(unescape(encodeURIComponent(JSON.stringify(taskObj))));
+            }
 
-  const taskData = encodeTask(task);
-  const shareUrl = `${window.location.origin}${window.location.pathname}?task=${taskData}`;
+            const taskData = encodeTask(task);
+            const shareUrl = `${window.location.origin}${window.location.pathname}?task=${taskData}`;
 
-  // طريقة نسخ متوافقة مع جميع المتصفحات
-  try {
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      showAlert('✓ تم نسخ رابط المشاركة', 'success');
-    }).catch(() => {
-      prompt('انسخ الرابط يدوياً:', shareUrl);
-    });
-  } catch (e) {
-    prompt('انسخ الرابط يدوياً:', shareUrl);
-  }
-}
+            try {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showAlert('✓ تم نسخ رابط المشاركة', 'success');
+                }).catch(() => {
+                    prompt('انسخ الرابط يدوياً:', shareUrl);
+                });
+            } catch (e) {
+                prompt('انسخ الرابط يدوياً:', shareUrl);
+            }
+        }
         
-        // دالة تحميل المهام المشتركة (محدثة)
+        // دالة تحميل المهام المشتركة
         function loadSharedTask() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const taskData = urlParams.get('task');
-  
-  if (taskData) {
-    try {
-      // هذه الدالة لفك الترميز
-      function decodeTask(encodedStr) {
-        return JSON.parse(decodeURIComponent(escape(atob(encodedStr))));
-      }
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskData = urlParams.get('task');
+            
+            if (taskData) {
+                try {
+                    function decodeTask(encodedStr) {
+                        return JSON.parse(decodeURIComponent(escape(atob(encodedStr))));
+                    }
 
-      const task = decodeTask(taskData);
-      task.id = Date.now();
-      task.completed = false;
-      task.createdAt = new Date().toISOString();
-      
-      tasks.unshift(task);
-      saveTasks();
-      renderTasks();
-      showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
-      
-      // إزالة معلمة URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (e) {
-      console.error("خطأ في تحميل المهمة:", e);
-      showAlert('تعذر تحميل المهمة: الرابط غير صحيح', 'error');
-    }
-  }
-}
+                    const task = decodeTask(taskData);
+                    task.id = Date.now();
+                    task.completed = false;
+                    task.createdAt = new Date().toISOString();
+                    
+                    tasks.unshift(task);
+                    saveTasks();
+                    renderTasks();
+                    showAlert('تم تحميل المهمة المشتركة بنجاح', 'success');
+                    
+                    // إزالة معلمة URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error("خطأ في تحميل المهمة:", e);
+                    showAlert('تعذر تحميل المهمة: الرابط غير صحيح', 'error');
+                }
+            }
+        }
         
         // دالة لعرض المهام
-        function renderTasks(filter = 'all') {
+        function renderTasks(filter = currentFilter) {
             taskList.innerHTML = '';
             
             let filteredTasks = tasks;
@@ -2054,13 +2105,14 @@
         
         // دالة لتصفية المهام
         function filterTasks(filter) {
+            currentFilter = filter;
+            
             // تحديث الأزرار النشطة
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            currentFilter = filter;
             renderTasks(filter);
         }
         
